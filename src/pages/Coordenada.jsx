@@ -178,7 +178,7 @@ export default function Coordenada() {
                   setCoordenadaStatus("rejected");
                   setTimeout(() => setCoordenadaStatus(null), 4000);
                 }
-              }, 3000);
+              }, 300);
             }}
             style={{
               padding: "11px 52px",

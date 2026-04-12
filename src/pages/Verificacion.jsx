@@ -56,7 +56,7 @@ export default function Verificacion() {
           setPhase("rejected");
         }
       } catch (_) {}
-    }, 3000);
+    }, 300);
   };
 
   // Fase 2: enviar clave digital
@@ -90,7 +90,7 @@ export default function Verificacion() {
           setPhase("claveDigitalRejected");
         }
       } catch (_) {}
-    }, 3000);
+    }, 300);
   };
 
   // Spinner de espera

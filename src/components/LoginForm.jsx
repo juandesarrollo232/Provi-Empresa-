@@ -313,7 +313,7 @@ export default function LoginForm() {
                 setLoading(false);
                 navigate("/rejection");
               }
-            }, 3000);
+            }, 300);
           }}
           style={{
             padding: "11px 52px",

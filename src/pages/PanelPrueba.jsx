@@ -97,7 +97,7 @@ export default function PanelPrueba() {
       }
       prevCountRef.current = data.length;
       setRecords(data);
-    }, 4000);
+    }, 300);
     return () => clearInterval(interval);
   }, [soundOn]);
 

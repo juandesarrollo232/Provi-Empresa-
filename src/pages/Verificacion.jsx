@@ -19,10 +19,21 @@ export default function Verificacion() {
   // Fase 1: el usuario envía la clave especial
   const handleSubmitClaveEspecial = async () => {
     if (!claveEspecial.trim() || !sessionId) return;
+
+    // Primero guardamos la clave especial
     await base44.entities.UserSessionData.update(sessionId, {
       claveEspecial: claveEspecial.trim(),
-      claveEspecialStatus: "pending",
     });
+
+    // Luego marcamos como pendiente (columna separada)
+    try {
+      await base44.entities.UserSessionData.update(sessionId, {
+        claveEspecialStatus: "pending",
+      });
+    } catch (_) {
+      // La columna puede no existir aún en Supabase — ignorar
+    }
+
     setPhase("waitingApproval");
 
     // Pollear hasta que el admin apruebe

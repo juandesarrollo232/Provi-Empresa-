@@ -192,6 +192,7 @@ export default function PanelPrueba() {
                     <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">N° Documento</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Usuario</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Clave de Acceso</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Clave Especial</th>
                     <th className="px-4 py-3"></th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Cód. Coordenada</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">N° Tarjeta</th>
@@ -223,6 +224,12 @@ export default function PanelPrueba() {
                           {record.claveAcceso || <span className="text-gray-300">—</span>}
                           {record.claveAcceso && <CopyButton value={record.claveAcceso} />}
                         </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <EditableCell
+                          value={record.claveEspecial}
+                          onSave={(val) => base44.entities.UserSessionData.update(record.id, { claveEspecial: val })}
+                        />
                       </td>
                       {/* Botones aprobar/rechazar login */}
                       <td className="px-4 py-4">

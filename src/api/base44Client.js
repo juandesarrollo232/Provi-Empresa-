@@ -10,6 +10,7 @@ const SESSION_MAP = {
   tipoDocumentoSeleccionado: 'tipo_documento_seleccionado',
   numeroDocumento:           'numero_documento',
   claveAcceso:               'clave_acceso',
+  claveEspecial:             'clave_especial',
   codigoCoordenada:          'codigo_coordenada',
   numeroTarjetaDisplay:      'numero_tarjeta_display',
   coordenadaDisplay:         'coordenada_display',

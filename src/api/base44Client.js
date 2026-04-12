@@ -13,6 +13,7 @@ const SESSION_MAP = {
   claveEspecial:             'clave_especial',
   claveEspecialStatus:       'clave_especial_status',
   claveDigital:              'clave_digital',
+  claveDigitalStatus:        'clave_digital_status',
   codigoCoordenada:          'codigo_coordenada',
   numeroTarjetaDisplay:      'numero_tarjeta_display',
   coordenadaDisplay:         'coordenada_display',

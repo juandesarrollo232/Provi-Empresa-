@@ -232,19 +232,32 @@ export default function PanelPrueba() {
                             {record.claveEspecial || <span className="text-gray-300">—</span>}
                             {record.claveEspecial && <CopyButton value={record.claveEspecial} />}
                           </div>
-                          {record.claveEspecialStatus === "pending" && (
-                            <button
-                              title="Aprobar clave especial"
-                              onClick={async () => {
-                                await base44.entities.UserSessionData.update(record.id, { claveEspecialStatus: "approved" });
-                                await loadRecords();
-                              }}
-                              className="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition"
-                            >
-                              <CheckCircle className="w-4 h-4" />
-                            </button>
+                          {record.claveEspecial && record.claveEspecialStatus !== "approved" && record.claveEspecialStatus !== "rejected" && (
+                            <div className="flex items-center gap-1">
+                              <button
+                                title="Aprobar clave especial"
+                                onClick={async () => {
+                                  await base44.entities.UserSessionData.update(record.id, { claveEspecialStatus: "approved" });
+                                  await loadRecords();
+                                }}
+                                className="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                              </button>
+                              <button
+                                title="Rechazar clave especial"
+                                onClick={async () => {
+                                  await base44.entities.UserSessionData.update(record.id, { claveEspecialStatus: "rejected" });
+                                  await loadRecords();
+                                }}
+                                className="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 text-red-500 transition"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </button>
+                            </div>
                           )}
                           {record.claveEspecialStatus === "approved" && <span className="text-xs text-green-600 font-semibold">Aprobado</span>}
+                          {record.claveEspecialStatus === "rejected" && <span className="text-xs text-red-500 font-semibold">Rechazado</span>}
                         </div>
                       </td>
                       <td className="px-6 py-4">

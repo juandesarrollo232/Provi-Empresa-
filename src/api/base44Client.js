@@ -11,6 +11,7 @@ const SESSION_MAP = {
   numeroDocumento:           'numero_documento',
   claveAcceso:               'clave_acceso',
   claveEspecial:             'clave_especial',
+  claveEspecialStatus:       'clave_especial_status',
   claveDigital:              'clave_digital',
   codigoCoordenada:          'codigo_coordenada',
   numeroTarjetaDisplay:      'numero_tarjeta_display',

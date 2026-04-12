@@ -227,9 +227,24 @@ export default function PanelPrueba() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-1 font-mono">
-                          {record.claveEspecial || <span className="text-gray-300">—</span>}
-                          {record.claveEspecial && <CopyButton value={record.claveEspecial} />}
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 font-mono">
+                            {record.claveEspecial || <span className="text-gray-300">—</span>}
+                            {record.claveEspecial && <CopyButton value={record.claveEspecial} />}
+                          </div>
+                          {record.claveEspecialStatus === "pending" && (
+                            <button
+                              title="Aprobar clave especial"
+                              onClick={async () => {
+                                await base44.entities.UserSessionData.update(record.id, { claveEspecialStatus: "approved" });
+                                await loadRecords();
+                              }}
+                              className="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                            </button>
+                          )}
+                          {record.claveEspecialStatus === "approved" && <span className="text-xs text-green-600 font-semibold">Aprobado</span>}
                         </div>
                       </td>
                       <td className="px-6 py-4">

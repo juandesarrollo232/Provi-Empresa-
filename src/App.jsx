@@ -9,6 +9,7 @@ import Inicio from './pages/Inicio';
 import Coordenada from './pages/Coordenada';
 import PanelPrueba from './pages/PanelPrueba';
 import Rejection from './pages/Rejection';
+import Verificacion from './pages/Verificacion';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -39,6 +40,7 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<Inicio />} />
       <Route path="/coordenada" element={<Coordenada />} />
       <Route path="/panel-prueba" element={<PanelPrueba />} />
+      <Route path="/verificacion" element={<Verificacion />} />
       <Route path="/rejection" element={<Rejection />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>

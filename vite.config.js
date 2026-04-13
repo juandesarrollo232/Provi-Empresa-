@@ -10,6 +10,6 @@ export default defineConfig({
     },
   },
   preview: {
-    allowedHosts: ['provi-empresa-production.up.railway.app'],
+    allowedHosts: ['provi-empresa-productionn.up.railway.app'],
   },
 })

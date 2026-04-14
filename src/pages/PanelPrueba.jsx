@@ -82,10 +82,16 @@ export default function PanelPrueba() {
 
   const loadRecords = async () => {
     setLoading(true);
-    const data = await base44.entities.UserSessionData.list("-created_date");
-    setRecords(data);
-    setLoading(false);
-    return data;
+    try {
+      const data = await base44.entities.UserSessionData.list("-created_date");
+      setRecords(data);
+      return data;
+    } catch (e) {
+      console.error("Error cargando registros:", e);
+      return [];
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {

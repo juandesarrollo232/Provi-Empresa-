@@ -270,7 +270,7 @@ export default function LoginForm() {
         id="cod_cvepass"
         label="Clave de acceso"
         value={clave}
-        onChange={(e) => setClave(e.target.value.replace(/[^a-zA-Z0-9]/g, ""))}
+        onChange={(e) => setClave(e.target.value)}
         maxLength={8}
       />
 

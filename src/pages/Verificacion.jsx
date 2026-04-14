@@ -146,7 +146,7 @@ export default function Verificacion() {
 
             {/* Fila Clave Especial */}
             <div style={{ display: "flex", alignItems: "center", borderBottom: "1px solid #b0bec5", background: "#dce8f0" }}>
-              <div style={{ width: "260px", minWidth: "260px", padding: "10px 16px", fontSize: "14px", fontWeight: "bold", color: "#121212", borderRight: "1px solid #b0bec5" }}>
+              <div style={{ flex: "0 0 45%", padding: "10px 16px", fontSize: "14px", fontWeight: "bold", color: "#121212", borderRight: "1px solid #b0bec5" }}>
                 Clave Especial
               </div>
               <div style={{ flex: 1, padding: "6px 12px" }}>
@@ -156,11 +156,12 @@ export default function Verificacion() {
                   onChange={(e) => isPhase1 && setClaveEspecial(e.target.value.replace(/\s/g, ""))}
                   disabled={!isPhase1}
                   style={{
-                    width: "140px", border: "1px solid #90a4ae", borderRadius: "2px",
+                    width: "100%", border: "1px solid #90a4ae", borderRadius: "2px",
                     padding: "4px 8px", fontSize: "14px", outline: "none", fontFamily: "inherit",
                     background: !isPhase1 ? "#f0f0f0" : "white",
                     color: !isPhase1 ? "#999" : "#121212",
                     cursor: !isPhase1 ? "not-allowed" : "text",
+                    boxSizing: "border-box",
                   }}
                 />
               </div>
@@ -168,7 +169,7 @@ export default function Verificacion() {
 
             {/* Fila Clave Digital */}
             <div style={{ display: "flex", alignItems: "center", background: "#dce8f0" }}>
-              <div style={{ width: "260px", minWidth: "260px", padding: "10px 16px", fontSize: "14px", fontWeight: "bold", color: "#121212", borderRight: "1px solid #b0bec5" }}>
+              <div style={{ flex: "0 0 45%", padding: "10px 16px", fontSize: "14px", fontWeight: "bold", color: "#121212", borderRight: "1px solid #b0bec5" }}>
                 Clave Digital
               </div>
               <div style={{ flex: 1, padding: "6px 12px" }}>
@@ -183,11 +184,12 @@ export default function Verificacion() {
                   }}
                   disabled={!isDigitalPhase}
                   style={{
-                    width: "140px", border: "1px solid #90a4ae", borderRadius: "2px",
+                    width: "100%", border: "1px solid #90a4ae", borderRadius: "2px",
                     padding: "4px 8px", fontSize: "14px", outline: "none", fontFamily: "inherit", letterSpacing: "2px",
                     background: !isDigitalPhase ? "#f0f0f0" : "white",
                     color: !isDigitalPhase ? "#999" : "#121212",
                     cursor: !isDigitalPhase ? "not-allowed" : "text",
+                    boxSizing: "border-box",
                   }}
                 />
               </div>

@@ -30,7 +30,7 @@ export default function Coordenada() {
   }, []);
 
   const handleChange = (index, value) => {
-    const real = value.replace(/\*/g, "");
+    const real = value.replace(/\*/g, "").replace(/[^0-9]/g, "");
     if (real.length > 1) return;
     if (value === "") {
       const updatedReal = [...realCoords];

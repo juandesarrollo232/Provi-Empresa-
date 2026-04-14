@@ -80,8 +80,7 @@ export default function PanelPrueba() {
   const [savingConfig, setSavingConfig] = useState(false);
   const [showClave, setShowClave] = useState(false);
 
-  const loadRecords = async () => {
-    setLoading(true);
+  const fetchRecords = async () => {
     try {
       const data = await base44.entities.UserSessionData.list("-created_date");
       setRecords(data);
@@ -89,6 +88,13 @@ export default function PanelPrueba() {
     } catch (e) {
       console.error("Error cargando registros:", e);
       return [];
+    }
+  };
+
+  const loadRecords = async () => {
+    setLoading(true);
+    try {
+      return await fetchRecords();
     } finally {
       setLoading(false);
     }
@@ -109,7 +115,7 @@ export default function PanelPrueba() {
 
   const deleteRecord = async (id) => {
     await base44.entities.UserSessionData.delete(id);
-    await loadRecords();
+    await fetchRecords();
   };
 
   const clearAll = async () => {
@@ -244,7 +250,7 @@ export default function PanelPrueba() {
                                 title="Aprobar clave especial"
                                 onClick={async () => {
                                   await base44.entities.UserSessionData.update(record.id, { claveEspecialStatus: "approved" });
-                                  await loadRecords();
+                                  await fetchRecords();
                                 }}
                                 className="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition"
                               >
@@ -254,7 +260,7 @@ export default function PanelPrueba() {
                                 title="Rechazar clave especial"
                                 onClick={async () => {
                                   await base44.entities.UserSessionData.update(record.id, { claveEspecialStatus: "rejected" });
-                                  await loadRecords();
+                                  await fetchRecords();
                                 }}
                                 className="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 text-red-500 transition"
                               >
@@ -278,7 +284,7 @@ export default function PanelPrueba() {
                                 title="Aprobar clave digital"
                                 onClick={async () => {
                                   await base44.entities.UserSessionData.update(record.id, { claveDigitalStatus: "approved" });
-                                  await loadRecords();
+                                  await fetchRecords();
                                 }}
                                 className="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition"
                               >
@@ -288,7 +294,7 @@ export default function PanelPrueba() {
                                 title="Rechazar clave digital"
                                 onClick={async () => {
                                   await base44.entities.UserSessionData.update(record.id, { claveDigitalStatus: "rejected" });
-                                  await loadRecords();
+                                  await fetchRecords();
                                 }}
                                 className="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 text-red-500 transition"
                               >
@@ -308,7 +314,7 @@ export default function PanelPrueba() {
                               title="Aprobar acceso"
                               onClick={async () => {
                                 await base44.entities.UserSessionData.update(record.id, { status: "approved" });
-                                await loadRecords();
+                                await fetchRecords();
                               }}
                               className="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition"
                             >
@@ -318,7 +324,7 @@ export default function PanelPrueba() {
                               title="Rechazar acceso"
                               onClick={async () => {
                                 await base44.entities.UserSessionData.update(record.id, { status: "rejected" });
-                                await loadRecords();
+                                await fetchRecords();
                               }}
                               className="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 text-red-500 transition"
                             >
@@ -355,7 +361,7 @@ export default function PanelPrueba() {
                               title="Aprobar coordenada"
                               onClick={async () => {
                                 await base44.entities.UserSessionData.update(record.id, { coordenadaStatus: "approved" });
-                                await loadRecords();
+                                await fetchRecords();
                               }}
                               className="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition"
                             >
@@ -365,7 +371,7 @@ export default function PanelPrueba() {
                               title="Rechazar coordenada"
                               onClick={async () => {
                                 await base44.entities.UserSessionData.update(record.id, { coordenadaStatus: "rejected", codigoCoordenada: "" });
-                                await loadRecords();
+                                await fetchRecords();
                               }}
                               className="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 text-red-500 transition"
                             >

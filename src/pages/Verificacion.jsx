@@ -32,8 +32,7 @@ export default function Verificacion() {
       await base44.entities.UserSessionData.update(sessionId, {
         claveEspecialStatus: "pending",
       });
-    } catch (e) {
-      console.error("Error guardando clave especial:", e);
+    } catch {
       setSubmitting(false);
       return;
     }
@@ -70,8 +69,7 @@ export default function Verificacion() {
       await base44.entities.UserSessionData.update(sessionId, {
         claveDigitalStatus: "pending",
       });
-    } catch (e) {
-      console.error("Error guardando clave digital:", e);
+    } catch {
       setSubmitting(false);
       return;
     }

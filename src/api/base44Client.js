@@ -63,8 +63,10 @@ const UserSessionData = {
   },
 
   async filter(query) {
+    const ALLOWED_FILTER_KEYS = new Set(['id', 'status', 'tipo_documento_seleccionado'])
     let q = supabase.from('user_session_data').select('*')
     for (const [key, val] of Object.entries(query)) {
+      if (!ALLOWED_FILTER_KEYS.has(key)) continue
       q = q.eq(key, val)
     }
     const { data, error } = await q

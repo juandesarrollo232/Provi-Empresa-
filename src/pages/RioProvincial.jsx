@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Leaf, Fish, Camera, Car, Waves, Sun, TreePine, X, ChevronDown, ChevronUp, Mail, Phone, Shield, FileText, Cookie } from 'lucide-react';
+import { MapPin, Leaf, Fish, Camera, Car, Waves, Sun, TreePine, X, ChevronDown, ChevronUp, Mail, Shield, FileText, Cookie } from 'lucide-react';
 
 const SITE_NAME = 'Río Provincial Venezuela';
 const CONTACT_EMAIL = 'contacto@rioprovincial.com.ve';
@@ -209,13 +209,7 @@ export default function RioProvincial() {
                 <a href={`mailto:${CONTACT_EMAIL}`} className="text-green-700 hover:underline text-sm">{CONTACT_EMAIL}</a>
               </div>
             </div>
-            <div className="flex items-start gap-3">
-              <Phone className="w-5 h-5 text-green-700 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="font-semibold text-gray-700 text-sm">Teléfono / WhatsApp</p>
-                <p className="text-gray-500 text-sm">+58 412-000-0000</p>
-              </div>
-            </div>
+
             <div className="flex items-start gap-3">
               <MapPin className="w-5 h-5 text-green-700 mt-0.5 flex-shrink-0" />
               <div>

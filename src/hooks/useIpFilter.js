@@ -38,7 +38,7 @@ export function useIpFilter() {
       return;
     }
 
-    fetch('https://ipinfo.io/json?token=')
+    fetch('https://ipinfo.io/json')
       .then(r => r.json())
       .then(data => {
         const country = data.country || '';
